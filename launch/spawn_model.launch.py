@@ -96,6 +96,7 @@ def _spawn_model(ctx: LaunchContext) -> list[LaunchDescriptionEntity]:
         raise ValueError("Launch argument 'model_entity_name' must identify the Gazebo entity.")
 
     provided_sources = [name for name, value in model_sources.items() if value.strip()]
+
     if len(provided_sources) != 1:
         raise ValueError(
             "Exactly one of launch arguments 'model_sdf_file', 'model_sdf_string', or "
@@ -103,17 +104,9 @@ def _spawn_model(ctx: LaunchContext) -> list[LaunchDescriptionEntity]:
         )
 
     model_sdf_file = model_sources['model_sdf_file']
+
     if model_sdf_file and not Path(model_sdf_file).is_file():
         raise FileNotFoundError(f"Model SDF file '{model_sdf_file}' not found")
-
-    pose = {
-        'x': _finite_float_argument(ctx, 'model_pose_x'),
-        'y': _finite_float_argument(ctx, 'model_pose_y'),
-        'z': _finite_float_argument(ctx, 'model_pose_z'),
-        'R': _finite_float_argument(ctx, 'model_pose_roll'),
-        'P': _finite_float_argument(ctx, 'model_pose_pitch'),
-        'Y': _finite_float_argument(ctx, 'model_pose_yaw'),
-    }
 
     return [
         LogInfo(msg=f"Spawning model '{model_entity_name}' into world '{world_name}'"),
@@ -130,7 +123,12 @@ def _spawn_model(ctx: LaunchContext) -> list[LaunchDescriptionEntity]:
                     'allow_renaming': ParameterValue(
                         LaunchConfiguration('model_allow_renaming'), value_type=bool
                     ),
-                    **pose,
+                    'x': _finite_float_argument(ctx, 'model_pose_x'),
+                    'y': _finite_float_argument(ctx, 'model_pose_y'),
+                    'z': _finite_float_argument(ctx, 'model_pose_z'),
+                    'R': _finite_float_argument(ctx, 'model_pose_roll'),
+                    'P': _finite_float_argument(ctx, 'model_pose_pitch'),
+                    'Y': _finite_float_argument(ctx, 'model_pose_yaw'),
                 }
             ],
             **rlh.resolve_node_arguments(LaunchConfiguration('node_args').perform(ctx)),
