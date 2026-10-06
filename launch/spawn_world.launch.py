@@ -139,6 +139,12 @@ def generate_launch_description() -> LaunchDescription:
                 choices=['debug', 'info', 'warn', 'error', 'fatal'],
                 description='ROS-Gazebo bridge log level.',
             ),
+            DeclareLaunchArgument(
+                'world_bridge_use_sim_time',
+                default_value='False',
+                choices=['True', 'true', 'False', 'false'],
+                description='Use the simulation clock for the world bridge.',
+            ),
             OpaqueFunction(function=_spawn_world),
         ]
     )
@@ -179,6 +185,9 @@ def _spawn_world(ctx: LaunchContext) -> list[LaunchDescriptionEntity]:
     effective_world_bridge_name = world_bridge_name or f'{world_name}_bridge'
 
     extra_bridge_params: ParametersDict = {
+        (TextSubstitution(text='use_sim_time'),): ParameterValue(
+            LaunchConfiguration('world_bridge_use_sim_time'), value_type=bool
+        ),
         (TextSubstitution(text='subscription_heartbeat'),): ParameterValue(
             LaunchConfiguration('world_bridge_subscription_heartbeat'), value_type=int
         ),

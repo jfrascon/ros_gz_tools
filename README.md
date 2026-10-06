@@ -30,6 +30,9 @@ Exactly one world source must be provided:
 `world_bridge_config_file` is required and must identify an existing bridge YAML file.
 `world_bridge_name` is optional; when empty, the launch file uses `<world_name>_bridge`.
 
+`world_bridge_use_sim_time` selects the simulation clock for the bridge and defaults to `False`.
+Simulation orchestrators can explicitly pass `True`.
+
 The launch description creates the server action before the bridge action, but it does not wait for Gazebo to finish loading the world before starting the bridge.
 The bridge can start before its Gazebo topics exist and connect when they become available.
 

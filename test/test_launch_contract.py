@@ -208,6 +208,7 @@ def _world_context(tmp_path: Path) -> LaunchContext:
             'world_bridge_override_timestamps_with_wall_time': 'False',
             'world_bridge_override_frame_id': '',
             'world_bridge_use_respawn': 'False',
+            'world_bridge_use_sim_time': 'False',
             'world_bridge_log_level': 'info',
         }
     )
@@ -259,8 +260,9 @@ def test_spawn_world_rejects_a_missing_bridge_file(tmp_path: Path) -> None:
         module._spawn_world(context)
 
 
+@pytest.mark.parametrize('use_sim_time', ['False', 'True'])
 def test_spawn_world_builds_server_and_bridge_actions(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, use_sim_time: str
 ) -> None:
     """Use the validated inline SDF name for the Gazebo server and bridge."""
     module = _load_launch_file('spawn_world.launch.py')
@@ -288,6 +290,12 @@ def test_spawn_world_builds_server_and_bridge_actions(
     assert captured_server['world_sdf_file'] == ''
     assert captured_server['world_sdf_string'] == context.launch_configurations['world_sdf_string']
     assert captured_bridge['bridge_name'] == 'factory_bridge'
+    context.launch_configurations['world_bridge_use_sim_time'] = use_sim_time
+    bridge_params = {
+        key[0].text: value.evaluate(context)
+        for key, value in captured_bridge['extra_bridge_params'].items()
+    }
+    assert bridge_params['use_sim_time'] is {'False': False, 'True': True}[use_sim_time]
     assert (
         captured_bridge['config_file'] == context.launch_configurations['world_bridge_config_file']
     )
